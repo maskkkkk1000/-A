@@ -1,0 +1,74 @@
+{
+  "problems": [
+    {
+      "id": "pLinK40",
+      "title": "骑士林克的怜悯1",
+      "thinking": "Classic knight's tour problem solved with DFS backtracking; the key to producing the lexicographically smallest path is ordering the eight moves so that coordinates (column letter, row number) are explored from smallest to largest.",
+      "code": "int dx[8] = {-2, -2, -1, -1, 1, 1, 2, 2};\nint dy[8] = {-1, 1, -2, 2, -2, 2, -1, 1};\n// 移动顺序按字典序排列，保证首次找到的路径即为最小解\nbool dfs(int x, int y, int cnt) {\n    path.push_back({char(x + 'A'), y + 1});\n    if (cnt == p * q) return true;\n    st[x][y] = true;\n    for (int i = 0; i < 8; i++) {\n        int a = x + dx[i], b = y + dy[i];\n        if (a < 0 || a >= q || b < 0 || b >= p || st[a][b]) continue;\n        if (dfs(a, b, cnt + 1)) return true;\n    }\n    st[x][y] = false, path.pop_back();\n    return false;\n}",
+      "summary": "回溯的搜索顺序直接决定答案的字典序，移动向量按目标坐标排序比事后比较字符串更简洁高效。"
+    },
+    {
+      "id": "pLinK41",
+      "title": "英杰们的蛋糕塔",
+      "thinking": "DFS搜索蛋糕各层的半径和高度，通过预计算最小体积/表面积和最大可达体积三种剪枝大幅压缩状态空间，在所有可行方案中找出表面积最小值。",
+      "code": "int maxV = 0;\nfor (int i = layer, rr = r - 1, hh = h - 1; i >= 1; i--, rr--, hh--)\n    maxV += rr * rr * hh;\nif (sumV + maxV < V) return;  // 即使取最大也凑不够体积，剪枝\n\nfor (int i = r - 1; i >= layer; i--)\n    for (int j = h - 1; j >= layer; j--) {\n        int extraS = 2 * i * j;\n        if (layer == N) extraS += i * i;\n        dfs(layer - 1, sumV + i * i * j, sumS + extraS, i, j);\n    }",
+      "summary": "搜索剪枝的三个维度——已选+最小、已选+最大、以及当前最优答案——缺一不可，剪枝顺序也影响效率。"
+    },
+    {
+      "id": "pLinK42",
+      "title": "击杀黄金蛋糕人马",
+      "thinking": "区间DP思想，将矩形切分成两个子矩形递归求解，状态dp[w][h][m]记录w×h矩形切成m块时最大面积的最小值，通过枚举切分位置和分配块数取极小极大值。",
+      "code": "for (int i = 1; i < w; i++)\n    for (int k = 1; k < m; k++)\n        if (k <= i * h && m - k <= (w - i) * h)\n            ans = min(ans, max(solve(i, h, k), solve(w - i, h, m - k)));\n// 水平切：左边切k块，右边切m-k块，保证每边能容纳这么多块",
+      "summary": "极小化极大值问题优先考虑DP，枚举切割位置时加入面积容量判断（k <= i*h）能避免大量无效递归。"
+    },
+    {
+      "id": "pLinK43",
+      "title": "求二进制中1的个数",
+      "thinking": "利用 lowbit 性质 x & (x-1) 每次消去最低位的 1，循环次数即为二进制表示中 1 的个数，简洁且高效。",
+      "code": "int cnt = 0;\nwhile (x) {\n    x &= x - 1;  // lowbit: 每次消去最低位的1，循环次数即1的个数\n    cnt++;\n}\ncout << cnt << endl;",
+      "summary": "x & (x-1) 消去最低位 1 的技巧比逐位检查快得多，且对负数同样适用（补码表示下逻辑一致）。"
+    },
+    {
+      "id": "pLinK44",
+      "title": "二进制中1的最低位位置打表Lowbit",
+      "thinking": "先用 lowbit = n & -n 提取最低位的 1 对应的数值，再通过预计算的 log[1<<i] = i 表 O(1) 查到该位置，典型的空间换时间。",
+      "code": "void BuildlogTable(int n) {\n    for (int i = 0; i <= n; i++)\n        log[1 << i] = i;  // 预存 2^i 对应的指数 i\n}\nint query(int n) {\n    return log[lowbit(n)];  // lowbit 提取最低位1，查表得位置\n}",
+      "summary": "打表法将 O(log n) 的查对数操作降到 O(1)，与 lowbit 配合是位运算题中的经典预处理手法。"
+    },
+    {
+      "id": "pLinK45",
+      "title": "真假记忆碎片",
+      "thinking": "两步验证——先检查输入是否与已知初始矩阵的已知数字一致（非零位必须匹配），再检查行、列和九宫格是否满足数独规则。",
+      "code": "if (a[i][j] != 0 && a[i][j] != t) return false;  // 初始矩阵已固定的位置必须匹配\nb[i][j] = t;\n// 随后逐行、逐列、逐块检查 1-9 不重复",
+      "summary": "验证类问题分两步走：先校验输入与已知约束的一致性，再校验全局规则，避免将两个逻辑混在一起排查困难。"
+    },
+    {
+      "id": "pLinK46",
+      "title": "寻找林克的回忆1",
+      "thinking": "标准数独 DFS 回溯，用三个布尔数组分别标记行、列、九宫格中已使用的数字，逐格尝试 1-9 并在冲突时回溯。",
+      "code": "if (g[x][y] != 0) return dfs(x, y + 1);\nfor (int t = 1; t <= 9; t++) {\n    if (!st_row[x][t] && !st_col[y][t] && !st_block[x/3][y/3][t]) {\n        st_row[x][t] = st_col[y][t] = st_block[x/3][y/3][t] = true;\n        g[x][y] = t;\n        if (dfs(x, y + 1)) return true;\n        g[x][y] = 0;  // 回溯时恢复现场\n        st_row[x][t] = st_col[y][t] = st_block[x/3][y/3][t] = false;\n    }\n}",
+      "summary": "用位运算替代布尔数组可以简化代码，但布尔数组的写法更直观易调试，适合初学者理解回溯的“标记-递归-恢复”模式。"
+    },
+    {
+      "id": "pLinK47",
+      "title": "寻找林克的回忆2",
+      "thinking": "用 9 位二进制掩码表示每行、每列、每宫的可选数字，每次选择候选数最少的格子优先搜索（MRV 启发式），配合 lowbit 快速枚举可填数字，大幅加速数独求解。",
+      "code": "int minv = 10, x, y;\nfor (int i = 0; i < N; i++)\n    for (int j = 0; j < N; j++)\n        if (str[i*9+j] == '.' && ones[get(i,j)] < minv)\n            minv = ones[get(i,j)], x = i, y = j;\n// 优先搜索候选数最少的格子，显著减少回溯次数\nfor (int i = get(x, y); i; i -= lowbit(i)) {\n    int t = LOG[lowbit(i)];\n    row[x] -= 1<<t, col[y] -= 1<<t, block[x/3][y/3] -= 1<<t;\n    str[x*9+y] = '1'+t;\n    if (dfs(cnt-1)) return true;\n    row[x] += 1<<t, col[y] += 1<<t, block[x/3][y/3] += 1<<t;\n    str[x*9+y] = '.';\n}",
+      "summary": "位掩码 + MRV 启发式是数独类问题的黄金组合，前者让状态操作 O(1)，后者让搜索树大幅瘦身，两者缺一不可。"
+    },
+    {
+      "id": "pLinK48",
+      "title": "寻找林克的回忆3",
+      "thinking": "在标准数独位运算求解框架上增加分值计算——每个格子填数字 t 获得 score(x,y) * t 的分数，DFS 搜索所有可行解并追踪最高总分。",
+      "code": "inline int get_score(int x, int y, int t) {\n    return (min(min(x, 8-x), min(y, 8-y)) + 6) * t;\n    // 离中心越近 min(...) 越小，加 6 后即得靶形分值 6~10\n}\nvoid dfs(int cnt, int score) {\n    if (!cnt) { ans = max(ans, score); return; }\n    // 同标准数独 MRV 选格，枚举候选 ...\n    dfs(cnt - 1, score + get_score(x, y, t));\n}",
+      "summary": "从“求任一解”到“求最优解”只需去掉早期返回、改为记录全局最值，位运算框架的优势在此体现——搜索完整状态空间仍可在时限内完成。"
+    },
+    {
+      "id": "pLinK49",
+      "title": "寻找林克的回忆4",
+      "thinking": "将 9×9 数独的位运算解法推广到 16×16 字母数独，掩码扩展为 16 位，九宫格变为 4×4 块，MRV 选格和 lowbit 枚举策略完全通用。",
+      "code": "int cand = get(mx, my);\nfor (int k = cand; k; k -= lowbit(k)) {\n    int v = cnt[lowbit(k)];\n    board[mx][my] = 'A' + v;\n    row[mx] ^= (1 << v);  // 用异或切换状态，省去加/减判断\n    col[my] ^= (1 << v);\n    cell[mx / 4][my / 4] ^= (1 << v);\n    if (dfs(left - 1)) return true;\n    board[mx][my] = '-';\n    row[mx] ^= (1 << v);\n    col[my] ^= (1 << v);\n    cell[mx / 4][my / 4] ^= (1 << v);\n}",
+      "summary": "用异或代替加减法来切换掩码位，天然对称无需判断方向，回溯时再次异或即可恢复，代码更简洁且不易漏恢复步骤。"
+    }
+  ]
+}
